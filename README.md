@@ -35,10 +35,10 @@ Dependencies
 
 What You Don't Get
 ------------------
-* No network printing.
-* No Wi-Fi configuration.
-* No graphical utilities or system tray service.
-* No firmware updates on supported devices.
+* Network printing.
+* Wi-Fi configuration.
+* Graphical utilities or a system tray service.
+* Firmware updates on supported devices.
 
 To Do
 -----
