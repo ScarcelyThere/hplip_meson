@@ -5,8 +5,8 @@ pkg = import('pkgconfig')
 
 # TODO: Configurable options would be nice here
 confdir = '"/etc/hp"'
-confdir_options = '-DCONFDIR' + confdir
-version_options = '-DVERSION' + meson.project_version()
+confdir_options = '-DCONFDIR=' + confdir
+version_options = '-DVERSION=' + meson.project_version()
 imageprocessor_options = '-DDISABLE_IMAGEPROCESSOR'
 
 # General dependencies outside of our tree
@@ -33,7 +33,7 @@ cupsfiltersdep = dependency('libcupsfilters')
 
 # Include directories. Most of what we're building needs the utilities in common/ and
 #  hpmud is very frequently used, so it might as well be here.
-common_includes = [ 'common', 'io/hpmud' ]
+common_includes = [ 'common', 'io/hpmud', 'prnt/hpijs' ]
 
 # hpmud depends on hplip.conf, which we will generate from a template
 hplipconfdata = configuration_data(
@@ -126,7 +126,8 @@ endif
 
 hpcupssrc = [ 'prnt/hpcups/jccolor.c', 'prnt/hpcups/jdatadbf.c',
               'prnt/hpcups/Utils.cpp', 'prnt/hpcups/SystemServices.cpp',
-              'prnt/hpcups/Scaler.cpp', 'prnt/hpcups/RunLenEncoding.cpp', 'prnt/hpcups/RasterSender.cpp', 'prnt/hpcups/QuickConnect.cpp',
+              'prnt/hpcups/Scaler.cpp', 'prnt/hpcups/RunLenEncoding.cpp',
+              'prnt/hpcups/RasterSender.cpp', 'prnt/hpcups/QuickConnect.cpp',
               'prnt/hpcups/Processor.cpp', 'prnt/hpcups/Pipeline.cpp',
               'prnt/hpcups/Pcl3Gui.cpp', 'prnt/hpcups/Pcl3Gui2.cpp', 'prnt/hpcups/Pcl3.cpp',
               'prnt/hpcups/ModeJpeg.cpp', 'prnt/hpcups/ModeJbig.cpp',
