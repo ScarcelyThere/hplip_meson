@@ -12,8 +12,14 @@ imageprocessor_options = '-DDISABLE_IMAGEPROCESSOR'
 # General dependencies outside of our tree
 cupsdep = dependency('cups')
 usbdep  = dependency('libusb-1.0')
+
 # We won't build SANE support should we be missing it.
+build_sane = false
 sanedep = dependency('sane-backends', required: false)
+if sanedep.found()
+  build_sane = true
+endif
+
 jpegdep = dependency('libjpeg')
 cupsfiltersdep = dependency('libcupsfilters')
 
@@ -34,7 +40,7 @@ hplipconfdata = configuration_data(
         { 'abs_datadir': get_option('prefix') /
                          get_option('datadir'),
           'VERSION'    : meson.project_version(),
-          'scan_build' : 'true',
+          'scan_build' : build_sane.to_string(),
           'fax_build'  : 'false',
           'lite_build' : 'true' } )
 
@@ -67,25 +73,27 @@ pkg.generate(hpmudlib)
 
 # hpip image processing library
 #  Needed by sane_hpaio
-hpipsrc = [ 'ip/ipmain.c', 'ip/xbi2gray.c', 'ip/xchgbpp.c', 'ip/xcolrspc.c',
-            'ip/xconvolve.c', 'ip/xcrop.c', 'ip/xfakemono.c', 'ip/xfax.c',
-            'ip/xgamma.c', 'ip/xgray2bi.c', 'ip/xgrayout.c', 'ip/xinvert.c',
-            'ip/xjpg_dct.c', 'ip/xjpg_dec.c', 'ip/xjpg_enc.c', 'ip/xjpg_fix.c', 
-            'ip/xjpg_huf.c', 'ip/xmatrix.c', 'ip/xpad.c', 'ip/xpcx.c', 'ip/xpnm.c',
-            'ip/xrotate.c', 'ip/xsaturation.c', 'ip/xscale.c', 'ip/xskel.c',
-            'ip/xtable.c', 'ip/xthumb.c', 'ip/xtiff.c', 'ip/xtonemap.c',
-            'ip/xyxtract.c' ]
+if build_sane
+  hpipsrc = [ 'ip/ipmain.c', 'ip/xbi2gray.c', 'ip/xchgbpp.c', 'ip/xcolrspc.c',
+              'ip/xconvolve.c', 'ip/xcrop.c', 'ip/xfakemono.c', 'ip/xfax.c',
+              'ip/xgamma.c', 'ip/xgray2bi.c', 'ip/xgrayout.c', 'ip/xinvert.c',
+              'ip/xjpg_dct.c', 'ip/xjpg_dec.c', 'ip/xjpg_enc.c', 'ip/xjpg_fix.c', 
+              'ip/xjpg_huf.c', 'ip/xmatrix.c', 'ip/xpad.c', 'ip/xpcx.c', 'ip/xpnm.c',
+              'ip/xrotate.c', 'ip/xsaturation.c', 'ip/xscale.c', 'ip/xskel.c',
+              'ip/xtable.c', 'ip/xthumb.c', 'ip/xtiff.c', 'ip/xtonemap.c',
+              'ip/xyxtract.c' ]
 
-hpiplib = library('hpip', hpipsrc, install : true,
-                  link_args : '-lm', c_args: confdir_options,
-                  include_directories : 'ip' )
-install_headers('ip/hpip.h')
+  hpiplib = library('hpip', hpipsrc, install : true,
+                    link_args : '-lm', c_args: confdir_options,
+                    include_directories : 'ip' )
+  install_headers('ip/hpip.h')
+endif
 
-# hpipp Internet Printing Protocol library
-#  So far, this is only needed by sane_hpaio
-hpippsrc = [ 'protocol/hp_ipp.c', 'common/utils.c' ]
+if build_sane
+  # hpipp Internet Printing Protocol library
+  #  So far, this is only needed by sane_hpaio
+  hpippsrc = [ 'protocol/hp_ipp.c', 'common/utils.c' ]
 
-if sanedep.found()
   hpipplib = library('hpipp', hpippsrc, install : true,
                      dependencies : cupsdep,
                      version : meson.project_version(),
@@ -93,7 +101,9 @@ if sanedep.found()
                      include_directories : common_includes,
                      c_args : confdir_options )
   install_headers('protocol/hp_ipp.h')
+endif
 
+if build_sane
   sane_hpaiosrc = [ 'scan/sane/bb_ledm.c', 'scan/sane/common.c', 'scan/sane/escl.c',
                     'scan/sane/hpaio.c', 'scan/sane/http.c', 'scan/sane/io.c',
                     'scan/sane/ledm.c', 'scan/sane/marvell.c', 'scan/sane/mfpdtf.c',
@@ -116,8 +126,7 @@ endif
 
 hpcupssrc = [ 'prnt/hpcups/jccolor.c', 'prnt/hpcups/jdatadbf.c',
               'prnt/hpcups/Utils.cpp', 'prnt/hpcups/SystemServices.cpp',
-              'prnt/hpcups/Scaler.cpp', 'prnt/hpcups/RunLenEncoding.cpp',
-              'prnt/hpcups/RasterSender.cpp', 'prnt/hpcups/QuickConnect.cpp',
+              'prnt/hpcups/Scaler.cpp', 'prnt/hpcups/RunLenEncoding.cpp', 'prnt/hpcups/RasterSender.cpp', 'prnt/hpcups/QuickConnect.cpp',
               'prnt/hpcups/Processor.cpp', 'prnt/hpcups/Pipeline.cpp',
               'prnt/hpcups/Pcl3Gui.cpp', 'prnt/hpcups/Pcl3Gui2.cpp', 'prnt/hpcups/Pcl3.cpp',
               'prnt/hpcups/ModeJpeg.cpp', 'prnt/hpcups/ModeJbig.cpp',
