@@ -12,7 +12,8 @@ imageprocessor_options = '-DDISABLE_IMAGEPROCESSOR'
 # General dependencies outside of our tree
 cupsdep = dependency('cups')
 usbdep  = dependency('libusb-1.0')
-sanedep = dependency('sane-backends')
+# We won't build SANE support should we be missing it.
+sanedep = dependency('sane-backends', required: false)
 jpegdep = dependency('libjpeg')
 cupsfiltersdep = dependency('libcupsfilters')
 
@@ -84,34 +85,34 @@ install_headers('ip/hpip.h')
 #  So far, this is only needed by sane_hpaio
 hpippsrc = [ 'protocol/hp_ipp.c', 'common/utils.c' ]
 
-hpipplib = library('hpipp', hpippsrc, install : true,
-                   dependencies : cupsdep,
-                   version : meson.project_version(),
-                   link_with: hpmudlib,
-                   include_directories : common_includes,
-                   c_args : confdir_options )
-install_headers('protocol/hp_ipp.h')
+if sanedep.found()
+  hpipplib = library('hpipp', hpippsrc, install : true,
+                     dependencies : cupsdep,
+                     version : meson.project_version(),
+                     link_with: hpmudlib,
+                     include_directories : common_includes,
+                     c_args : confdir_options )
+  install_headers('protocol/hp_ipp.h')
 
-# libsane-hpaio, used by SANE for scanner access
+  sane_hpaiosrc = [ 'scan/sane/bb_ledm.c', 'scan/sane/common.c', 'scan/sane/escl.c',
+                    'scan/sane/hpaio.c', 'scan/sane/http.c', 'scan/sane/io.c',
+                    'scan/sane/ledm.c', 'scan/sane/marvell.c', 'scan/sane/mfpdtf.c',
+                    'scan/sane/orblite.c', 'scan/sane/pml.c', 'scan/sane/sanei_init_debug.c',
+                    'scan/sane/scl.c', 'scan/sane/sclpml.c', 'scan/sane/soap.c',
+                    'scan/sane/soapht.c', 'scan/sane/xml.c', 'common/utils.c' ]
 
-sane_hpaiosrc = [ 'scan/sane/bb_ledm.c', 'scan/sane/common.c', 'scan/sane/escl.c',
-                  'scan/sane/hpaio.c', 'scan/sane/http.c', 'scan/sane/io.c',
-                  'scan/sane/ledm.c', 'scan/sane/marvell.c', 'scan/sane/mfpdtf.c',
-                  'scan/sane/orblite.c', 'scan/sane/pml.c', 'scan/sane/sanei_init_debug.c',
-                  'scan/sane/scl.c', 'scan/sane/sclpml.c', 'scan/sane/soap.c',
-                  'scan/sane/soapht.c', 'scan/sane/xml.c', 'common/utils.c' ]
-
-sane_hpaiolib = library('sane-hpaio', sane_hpaiosrc,
-                version : '1', # this apparently has to be 1 or SANE won't find it
-                dependencies : [ sanedep, cupsdep ],
-                link_with: [ hpmudlib, hpipplib, hpiplib ],
-                install : true,
-                include_directories : [ common_includes, 'ip',
-                                        'protocol' ],
-                gnu_symbol_visibility : 'default',
-                c_args : confdir_options,
-                link_args : [ '-lm', '-ldl' ],
-                install_dir : '/usr/lib/sane' )
+  sane_hpaiolib = library('sane-hpaio', sane_hpaiosrc,
+                  version : '1', # this apparently has to be 1 or SANE won't find it
+                  dependencies : [ sanedep, cupsdep ],
+                  link_with: [ hpmudlib, hpipplib, hpiplib ],
+                  install : true,
+                  include_directories : [ common_includes, 'ip',
+                                          'protocol' ],
+                  gnu_symbol_visibility : 'default',
+                  c_args : confdir_options,
+                  link_args : [ '-lm', '-ldl' ],
+                  install_dir : '/usr/lib/sane' )
+endif
 
 hpcupssrc = [ 'prnt/hpcups/jccolor.c', 'prnt/hpcups/jdatadbf.c',
               'prnt/hpcups/Utils.cpp', 'prnt/hpcups/SystemServices.cpp',
