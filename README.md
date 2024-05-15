@@ -6,8 +6,8 @@ Why?
 Do you own an older USB-only Hewlett-Packard all-in-one scanner-copier-printer
 you like to use on your favorite UN*X? Do you do all your printing through CUPS?
 Do you build HP's HPLIP package with `--enable-hpcups-only-build` and wish it
-included SANE support without the network printing, graphical utility, and Wi-Fi setup utilities
-you never use?
+included SANE support without the network printing, graphical utility, and Wi-Fi
+setup utilities you never use?
 
 If you answered "yes," you might like this!
 

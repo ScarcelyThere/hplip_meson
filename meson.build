@@ -103,7 +103,7 @@ sane_hpaiosrc = [ 'scan/sane/bb_ledm.c', 'scan/sane/common.c', 'scan/sane/escl.c
 
 sane_hpaiolib = library('sane-hpaio', sane_hpaiosrc,
                 version : '1', # this apparently has to be 1 or SANE won't find it
-                dependencies : [ sanedep, cupsdep, ],
+                dependencies : [ sanedep, cupsdep ],
                 link_with: [ hpmudlib, hpipplib, hpiplib ],
                 install : true,
                 include_directories : [ common_includes, 'ip',
