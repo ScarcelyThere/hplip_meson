@@ -176,4 +176,4 @@ hpbackend = executable('hp', hpbackendsrc, install : true,
                        link_with : hpmudlib,
                        c_args :  [ confdir_options, version_options ],
                        include_directories : common_includes,
-                       install_dir : cupsfilterdir)
+                       install_dir : cupsbackenddir)
