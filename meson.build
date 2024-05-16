@@ -4,8 +4,8 @@ project ('hplip-basic',
 pkg = import('pkgconfig')
 
 # TODO: Configurable options would be nice here
-confdir = '"/etc/hp"'
-confdir_options = '-DCONFDIR=' + confdir
+confdir = '/etc/hp'
+confdir_options = '-DCONFDIR="' + confdir + '"'
 version_options = '-DVERSION=' + meson.project_version()
 imageprocessor_options = '-DDISABLE_IMAGEPROCESSOR'
 
@@ -20,8 +20,12 @@ if sanedep.found()
   build_sane = true
 endif
 
-jpegdep = dependency('libjpeg')
+jpegdep        = dependency('libjpeg')
 cupsfiltersdep = dependency('libcupsfilters')
+
+cupsbindir = cupsdep.get_variable(pkgconfig : 'cups_serverbin' )
+cupsfilterdir  = cupsbindir / 'filter'
+cupsbackenddir = cupsbindir / 'backend'
 
 # For future consideration:
 # hpdiscoverysrc = [ 'protocol/discovery/avahiDiscover.c' ]
@@ -37,18 +41,20 @@ common_includes = [ 'common', 'io/hpmud', 'prnt/hpijs' ]
 
 # hpmud depends on hplip.conf, which we will generate from a template
 hplipconfdata = configuration_data(
-        { 'abs_datadir': get_option('prefix') /
-                         get_option('datadir'),
-          'VERSION'    : meson.project_version(),
-          'scan_build' : build_sane.to_string(),
-          'fax_build'  : 'false',
-          'lite_build' : 'true' } )
+        { 'abs_datadir'    : get_option('prefix') /
+                             get_option('datadir'),
+          'VERSION'        : meson.project_version(),
+          'scan_build'     : build_sane.to_string(),
+          'fax_build'      : 'false',
+          'lite_build'     : 'true',
+          'cupsfilterdir'  : cupsfilterdir,
+          'cupsbackenddir' : cupsbackenddir })
 
-hplipconf = configure_file( configuration : hplipconfdata,
-                            input : 'hplip.conf.in',
-                            install : true,
-                            install_dir : confdir,
-                            output : 'hplip.conf' )
+hplipconf = configure_file(configuration : hplipconfdata,
+                           input : 'hplip.conf.in',
+                           install : true,
+                           install_dir : confdir,
+                           output : 'hplip.conf')
 
 # hpmud HP USB multiplexing library
 #  Depends on models.dat presence.
@@ -68,7 +74,7 @@ hpmudlib = library('hpmud', hpmudsrc,
                    install : true)
 install_headers('io/hpmud/hpmud.h')
 install_data('data/models/models.dat',
-             install_dir : 'hplip/data/models' )
+             install_dir : get_option('datadir') + '/hplip/data/models')
 pkg.generate(hpmudlib)
 
 # hpip image processing library
@@ -85,7 +91,7 @@ if build_sane
 
   hpiplib = library('hpip', hpipsrc, install : true,
                     link_args : '-lm', c_args: confdir_options,
-                    include_directories : 'ip' )
+                    include_directories : 'ip')
   install_headers('ip/hpip.h')
 endif
 
@@ -99,7 +105,7 @@ if build_sane
                      version : meson.project_version(),
                      link_with: hpmudlib,
                      include_directories : common_includes,
-                     c_args : confdir_options )
+                     c_args : confdir_options)
   install_headers('protocol/hp_ipp.h')
 endif
 
@@ -112,16 +118,16 @@ if build_sane
                     'scan/sane/soapht.c', 'scan/sane/xml.c', 'common/utils.c' ]
 
   sane_hpaiolib = library('sane-hpaio', sane_hpaiosrc,
-                  version : '1', # this apparently has to be 1 or SANE won't find it
-                  dependencies : [ sanedep, cupsdep ],
-                  link_with: [ hpmudlib, hpipplib, hpiplib ],
-                  install : true,
-                  include_directories : [ common_includes, 'ip',
-                                          'protocol' ],
-                  gnu_symbol_visibility : 'default',
-                  c_args : confdir_options,
-                  link_args : [ '-lm', '-ldl' ],
-                  install_dir : '/usr/lib/sane' )
+                          version : '1', # this apparently has to be 1 or SANE won't find it
+                          dependencies : [ sanedep, cupsdep ],
+                          link_with: [ hpmudlib, hpipplib, hpiplib ],
+                          install : true,
+                          include_directories : [ common_includes, 'ip',
+                                                  'protocol' ],
+                          gnu_symbol_visibility : 'default',
+                          c_args : confdir_options,
+                          link_args : [ '-lm', '-ldl' ],
+                          install_dir : '/usr/lib/sane')
 endif
 
 hpcupssrc = [ 'prnt/hpcups/jccolor.c', 'prnt/hpcups/jdatadbf.c',
@@ -149,13 +155,13 @@ hpcupssrc = [ 'prnt/hpcups/jccolor.c', 'prnt/hpcups/jdatadbf.c',
               'prnt/hpcups/Compressor.cpp', 'prnt/hpcups/ColorMatcher.cpp',
               'prnt/hpcups/BreakTables.cpp', 'common/utils.c' ]
 
-hpcupsexe = executable( 'hpcups', hpcupssrc, install : true,
-                        dependencies : [ cupsdep, jpegdep, cupsfiltersdep ],
-                        include_directories : common_includes,
-                        cpp_args : [ confdir_options, imageprocessor_options ],
-                        c_args : [ confdir_options, imageprocessor_options ],
-                        link_args : [ '-lm', '-lz', '-ldl' ],
-                        install_dir : '/usr/lib/cups/filter' )
+hpcupsexe = executable('hpcups', hpcupssrc, install : true,
+                       dependencies : [ cupsdep, jpegdep, cupsfiltersdep ],
+                       include_directories : common_includes,
+                       cpp_args : [ confdir_options, imageprocessor_options ],
+                       c_args : [ confdir_options, imageprocessor_options ],
+                       link_args : [ '-lm', '-lz', '-ldl' ],
+                       install_dir : cupsfilterdir)
 
 # Copy the PPDs in. We built a tool that helps install these, but they appear
 #  pre-built so we just copy them.
@@ -166,8 +172,8 @@ install_subdir('ppd/hpcups',
 # Build the HP backend for CUPS.
 
 hpbackendsrc = [ 'prnt/backend/hp.c', 'common/utils.c' ]
-hpbackend = executable( 'hp', hpbackendsrc, install : true,
-                        link_with : hpmudlib,
-                        c_args :  [ confdir_options, version_options ],
-                        include_directories : common_includes,
-                        install_dir : '/usr/lib/cups/backend' )
+hpbackend = executable('hp', hpbackendsrc, install : true,
+                       link_with : hpmudlib,
+                       c_args :  [ confdir_options, version_options ],
+                       include_directories : common_includes,
+                       install_dir : cupsfilterdir)
