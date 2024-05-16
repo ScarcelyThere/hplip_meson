@@ -41,14 +41,15 @@ common_includes = [ 'common', 'io/hpmud', 'prnt/hpijs' ]
 
 # hpmud depends on hplip.conf, which we will generate from a template
 hplipconfdata = configuration_data(
-        { 'abs_datadir'    : get_option('prefix') /
-                             get_option('datadir'),
-          'VERSION'        : meson.project_version(),
-          'scan_build'     : build_sane.to_string(),
-          'fax_build'      : 'false',
-          'lite_build'     : 'true',
-          'cupsfilterdir'  : cupsfilterdir,
-          'cupsbackenddir' : cupsbackenddir })
+        { 'configure_input' : 'hplip_meson build of HPLIP',
+          'abs_datadir'     : get_option('prefix') /
+                              get_option('datadir'),
+          'VERSION'         : meson.project_version(),
+          'scan_build'      : build_sane.to_string(),
+          'fax_build'       : 'false',
+          'lite_build'      : 'true',
+          'cupsfilterdir'   : cupsfilterdir,
+          'cupsbackenddir'  : cupsbackenddir })
 
 hplipconf = configure_file(configuration : hplipconfdata,
                            input : 'hplip.conf.in',
