@@ -180,7 +180,7 @@ hpbackend = executable( 'hp', hpbackendsrc, install: true,
                         include_directories: common_includes,
                         install_dir: cupsbackenddir )
 
-hpijssrc = [ 'prnt/hpijs/PrinterProperties.cpp', 
+hpijssrc = [ 'common/utils.c',
              'prnt/hpijs/apollo21xx.cpp', 'prnt/hpijs/apollo2560.cpp', 
              'prnt/hpijs/apollo2xxx.cpp', 'prnt/hpijs/breaks_open.cpp', 
              'prnt/hpijs/capture.cpp', 'prnt/hpijs/colormatch.cpp', 
@@ -203,8 +203,7 @@ hpijssrc = [ 'prnt/hpijs/PrinterProperties.cpp',
              'prnt/hpijs/djgenericvip.cpp', 'prnt/hpijs/filterhpa.cpp', 
              'prnt/hpijs/globals.cpp', 'prnt/hpijs/halftoner.cpp', 
              'prnt/hpijs/halftoner_open.cpp', 'prnt/hpijs/header2.cpp', 
-             'prnt/hpijs/hpcupsfax.cpp', 'prnt/hpijs/hpijs.cpp', 
-             'prnt/hpijs/hpijsfax.cpp', 'prnt/hpijs/hpiom.c', 
+             'prnt/hpijs/hpijs.cpp', 'prnt/hpijs/hpiom.c', 
              'prnt/hpijs/htmtxhi.cpp', 'prnt/hpijs/ijs.c', 
              'prnt/hpijs/ijs_server.c', 'prnt/hpijs/jccolor.c', 
              'prnt/hpijs/jdatadbf.c', 'prnt/hpijs/job.cpp', 
@@ -220,12 +219,19 @@ hpijssrc = [ 'prnt/hpijs/PrinterProperties.cpp',
              'prnt/hpijs/scaler_open.cpp', 'prnt/hpijs/script.cpp', 
              'prnt/hpijs/services.cpp', 'prnt/hpijs/systemservices.cpp', 
              'prnt/hpijs/translator.cpp', 'prnt/hpijs/version.cpp', 
-             'prnt/hpijs/versioncode.cpp' ]
+             'prnt/hpijs/versioncode.cpp',
+             ]
+# These are for faxing, I'm guessing.
+#             'prnt/hpijs/hpcupsfax.cpp',
+#             'prnt/hpijs/hpijsfax.cpp' ]
 
+apdk_options = [ '-DAPDK_AUTODUPLEX', '-DAPDK_EXTENDED_MEDIASIZE',
+                 '-DHAVE_STDINT_H', '-DAPDK_AUTO_INCLUDE',
+                 '-DVERSION="3.22"' ]
 hpijsexe = executable( 'hpijs', hpijssrc, install: true,
                        dependencies: [ cupsdep, jpegdep, cupsfiltersdep ],
                        include_directories: common_includes,
-                       cpp_args: [ confdir_options ],
+                       cpp_args: [ confdir_options, apdk_options ],
                        c_args: [ confdir_options ],
                        link_args: [ '-lm', '-lz', '-ldl' ],
                        install_dir: cupsfilterdir )
