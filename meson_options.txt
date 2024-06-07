@@ -2,3 +2,8 @@ option( 'network-build',
         type: 'feature',
         value: 'disabled',
         description: 'Enable Avahi and build libhpdiscovery' )
+
+option( 'hpijs',
+        type: 'feature',
+        value: 'disabled',
+        description: 'Build the HPIJS GhostScript driver' )
