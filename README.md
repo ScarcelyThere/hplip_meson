@@ -1,6 +1,9 @@
 HPLIP Basic
 ===========
 
+I haven't had HPLIP installed in awhile, so I'm archiving this repository. The
+last version of HPLIP this was tested on is 3.23.12.
+
 Why?
 ----
 Do you own an older USB-only Hewlett-Packard all-in-one scanner-copier-printer
